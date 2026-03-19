@@ -1,8 +1,5 @@
-const {schema, default: mongoose} = require('mongoose');
-const { type } = require('node:os');
-const { title } = require('node:process');
-
-const messageSchema = new mongoose.Schema({
+const {Schema, default: mongoose} = require('mongoose');
+const messageSchema = new Schema({
     title: {
         type: String,
         required: true

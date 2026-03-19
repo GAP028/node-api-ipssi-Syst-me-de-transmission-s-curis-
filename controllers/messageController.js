@@ -1,4 +1,4 @@
-const { response } = require('express');
+const { res } = require('express');
 const Message = require('../models/messageModel');
 const createMessage = async (req, res) => {
     const title = req.body.title;
@@ -21,7 +21,15 @@ const createMessage = async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur', error: true });
     }
 };
-    const findOneById = async (req, res) => {
+const findAll = async (req, res) => {
+    try {
+        const messages = await Message.find();
+        res.status(200).json({ message: 'Messages trouvés', result: messages });
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur serveur', error: true });
+    }
+};
+const findOneById = async (req, res) => {
     const id = req.params.id;
     try {
         const message = await Message.findOne({ _id: id });
@@ -35,5 +43,6 @@ const createMessage = async (req, res) => {
 };
 module.exports = {
     createMessage,
-    findOneById
+    findAll,
+    findOneById,
 };
