@@ -4,7 +4,7 @@ const createMessage = async (req, res) => {
     const title = req.body.title;
     const content = req.body.content;
     const type = req.body.type;
-    if (!title || !content || !type) {
+    if (!title || !content) {
         return res.status(400).json({ message:'title, content et type sont obligatoires', error: true,
         });       
     }
@@ -39,6 +39,9 @@ const findOneById = async (req, res) => {
         res.status(200).json({ message: 'Message trouvé', result: message });
     } catch (error) {
         res.status(500).json({ message: 'Erreur serveur', error: true });
+    }
+    if(message.type === 'lecture_unique') {
+        await Message.deleteOne({ _id: id });
     }
 };
 module.exports = {

@@ -10,7 +10,9 @@ const messageSchema = new Schema({
     },
     type: {
         type: String,
-        required: true
+        enum: ['public', 'lecture_unique'],
+        default: 'public',
+        required: true,
     },
     createdAt: {
         type: Date,
