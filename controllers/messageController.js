@@ -43,6 +43,35 @@ const findOneById = async (req, res) => {
     }
 
     if (message.type === 'lecture_unique') {
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader) {
+        return res.status(401).json({
+          message: 'Connexion obligatoire pour lire ce message',
+          error: true,
+        });
+      }
+
+      const token = authHeader.split(' ')[1];
+
+      if (!token) {
+        return res.status(401).json({
+          message: 'Token invalide',
+          error: true,
+        });
+      }
+
+      const jwt = require('jsonwebtoken');
+
+      try {
+        jwt.verify(token, process.env.JWT_SECRET);
+      } catch (error) {
+        return res.status(401).json({
+          message: 'Token invalide ou expiré',
+          error: true,
+        });
+      }
+
       await Message.deleteOne({ _id: id });
     }
 
