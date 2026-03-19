@@ -23,27 +23,41 @@ const createMessage = async (req, res) => {
 };
 const findAll = async (req, res) => {
     try {
-        const messages = await Message.find();
+        const messages = await Message.find({type: 'public'});
         res.status(200).json({ message: 'Messages trouvés', result: messages });
     } catch (error) {
         res.status(500).json({ message: 'Erreur serveur', error: true });
     }
 };
 const findOneById = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const message = await Message.findOne({ _id: id });
-        if (!message) {
-            return res.status(404).json({ message: 'Message non trouvé', error: true });
-        }
-        res.status(200).json({ message: 'Message trouvé', result: message });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur', error: true });
+  const id = req.params.id;
+
+  try {
+    const message = await Message.findOne({ _id: id });
+
+    if (!message) {
+      return res.status(404).json({
+        message: 'Message non trouvé',
+        error: true,
+      });
     }
-    if(message.type === 'lecture_unique') {
-        await Message.deleteOne({ _id: id });
+
+    if (message.type === 'lecture_unique') {
+      await Message.deleteOne({ _id: id });
     }
+
+    res.status(200).json({
+      message: 'Message trouvé',
+      result: message,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Erreur serveur',
+      error: true,
+    });
+  }
 };
+
 module.exports = {
     createMessage,
     findAll,
