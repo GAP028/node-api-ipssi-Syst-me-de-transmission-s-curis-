@@ -1,0 +1,104 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
+
+const register = async (req, res) => {
+  const username = req.body.username;
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!username || !email || !password) {
+    return res.status(400).json({
+      message: 'username, email et password sont obligatoires',
+      error: true,
+    });
+  }
+
+  try {
+    const existingUser = await User.findOne({ email: email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: 'Email déjà utilisé',
+        error: true,
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    res.status(201).json({
+      message: 'Utilisateur créé',
+      result: newUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Erreur serveur',
+      error: true,
+    });
+  }
+};
+
+const login = async (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      message: 'email et password sont obligatoires',
+      error: true,
+    });
+  }
+
+  try {
+    const user = await User.findOne({ email: email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'Utilisateur non trouvé',
+        error: true,
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        message: 'Mot de passe incorrect',
+        error: true,
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.status(200).json({
+      message: 'Connexion réussie',
+      token: token,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Erreur serveur',
+      error: true,
+    });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+};
